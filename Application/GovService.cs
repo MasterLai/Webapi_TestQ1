@@ -33,11 +33,11 @@ namespace Application
                 model.County = data.所在縣市;
                 model.Address = data.住址;
                 model.Telepon = data.電話;
-                uw.GenericRepository<Test>().Create(model);
+                uw.GenericRepository<Test>().Add(model);
             }
-            uw.GenericRepository<Test>().SaveChanges();
-            var result =  uw.GenericRepository<Test>().Reads();
-            return await result.ToListAsync();
+            uw.Save();
+            var result = await uw.GenericRepository<Test>().GetAllAsync();
+            return result.ToList();
         }
     }
 }

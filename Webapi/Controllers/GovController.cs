@@ -33,12 +33,15 @@ namespace Webapi.Controllers
         //     return result2;
         // }
 
-        // [HttpGet(Name = "GetGov")]
-        // public bool Get()
-        // {
-        //     db.Tests.Any();
+        [HttpGet(Name = "GetGov")]
+        public async Task<List<Test>> Get()
+        {
+             HttpClient httpClient = new();
+            List<Gov>? result = httpClient.GetFromJsonAsync<List<Gov>>("https://odws.hccg.gov.tw/001/Upload/25/opendataback/9059/870/8bfb5f8a-2748-44da-a188-6e568987676b.json").Result;
 
-        //     return db.Tests.Any();
-        // }
+            var result2 = await govService.AddDb(result);
+
+            return result2;
+        }
     }
 }

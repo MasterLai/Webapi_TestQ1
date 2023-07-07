@@ -5,7 +5,7 @@ import axios from 'axios';
 const result = ref(null)
 
 function onClick () {
-  axios.get('https://localhost:7076/Test').then((data) =>
+  axios.get('https://localhost:7076/Gov').then((data) =>
   {
     console.log(data.data)
     result.value = data.data

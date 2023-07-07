@@ -15,11 +15,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
-// builder.Services.AddScoped<IGenericRepository<Test>, GenericRepository<Test>>();
-// builder.Services.AddScoped(typeof(IGovService), typeof(GovService));
-// builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+// builder.Services.AddSingleton(typeof(IGenericRepository<Test>), typeof(GenericRepository<Test>));
+// builder.Services.AddSingleton(typeof(IGovService), typeof(GovService));
 
 builder.Services.AddDbContext<TestContext>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped(typeof(IGenericRepository<Test>), typeof(GenericRepository<Test>));
+builder.Services.AddScoped(typeof(IGovService), typeof(GovService));
 
 builder.Services.AddCors(options =>
 {

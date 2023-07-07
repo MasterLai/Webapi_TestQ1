@@ -1,7 +1,7 @@
 using Infrastructure.Interface;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -9,102 +9,72 @@ using System.Threading.Tasks;
 
 namespace Infrastructure
 {
-    /// <summary>
-    /// 實作Entity Framework Generic GenericRepository 的 Class。
-    /// </summary>
-    /// <typeparam name="TEntity">EF Model 裡面的Type</typeparam>
-    public class GenericRepository<TEntity> : IGenericRepository<TEntity>
-        where TEntity : class
+    public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private DbContext Context { get; set; }
+        protected readonly TestContext _dbContext;
+        private readonly DbSet<T> _entitiySet;
 
-        /// <summary>
-        /// 建構EF一個Entity的GenericRepository，需傳入此Entity的Context。
-        /// </summary>
-        /// <param name="inContext">Entity所在的Context</param>
-        public GenericRepository(DbContext inContext)
+
+        public GenericRepository(TestContext dbContext)
         {
-            Context = inContext;
+            _dbContext = dbContext;
+            _entitiySet = _dbContext.Set<T>();
         }
 
-        /// <summary>
-        /// 新增一筆資料到資料庫。
-        /// </summary>
-        /// <param name="entity">要新增到資料的庫的Entity</param>
-        public void Create(TEntity entity)
-        {
-            Context.Set<TEntity>().Add(entity);
-        }
 
-        /// <summary>
-        /// 取得第一筆符合條件的內容。如果符合條件有多筆，也只取得第一筆。
-        /// </summary>
-        /// <param name="predicate">要取得的Where條件。</param>
-        /// <returns>取得第一筆符合條件的內容。</returns>
-        public TEntity Read(Expression<Func<TEntity, bool>> predicate)
-        {
-            return Context.Set<TEntity>().Where(predicate).FirstOrDefault();
-        }
+        public void Add(T entity)
+            => _dbContext.Add(entity);
 
-        /// <summary>
-        /// 取得Entity全部筆數的IQueryable。
-        /// </summary>
-        /// <returns>Entity全部筆數的IQueryable。</returns>
-        public IQueryable<TEntity> Reads()
-        {
-            return Context.Set<TEntity>().AsQueryable();
-        }
 
-        /// <summary>
-        /// 更新一筆Entity內容。
-        /// </summary>
-        /// <param name="entity">要更新的內容</param>
-        public void Update(TEntity entity)
-        {
-            Context.Entry<TEntity>(entity).State = EntityState.Modified;
-        }
+        public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
+            => await _dbContext.AddAsync(entity, cancellationToken);
 
-        /// <summary>
-        /// 更新一筆Entity的內容。只更新有指定的Property。
-        /// </summary>
-        /// <param name="entity">要更新的內容。</param>
-        /// <param name="updateProperties">需要更新的欄位。</param>
-        public void Update(TEntity entity, Expression<Func<TEntity, object>>[] updateProperties)
-        {
-            Context.Configuration.ValidateOnSaveEnabled = false;
 
-            Context.Entry<TEntity>(entity).State = EntityState.Unchanged;
+        public void AddRange(IEnumerable<T> entities)
+            => _dbContext.AddRange(entities);
 
-            if (updateProperties != null)
-            {
-                foreach (var property in updateProperties)
-                {
-                    Context.Entry<TEntity>(entity).Property(property).IsModified = true;
-                }
-            }
-        }
 
-        /// <summary>
-        /// 刪除一筆資料內容。
-        /// </summary>
-        /// <param name="entity">要被刪除的Entity。</param>
-        public void Delete(TEntity entity)
-        {
-            Context.Entry<TEntity>(entity).State = EntityState.Deleted;
-        }
+        public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+            => await _dbContext.AddRangeAsync(entities, cancellationToken);
 
-        /// <summary>
-        /// 儲存異動。
-        /// </summary>
-        public void SaveChanges()
-        {
-            Context.SaveChanges();
 
-            // 因為Update 單一model需要先關掉validation，因此重新打開
-            if (Context.Configuration.ValidateOnSaveEnabled == false)
-            {
-                Context.Configuration.ValidateOnSaveEnabled = true;
-            }
-        }
+        public T Get(Expression<Func<T, bool>> expression)
+            => _entitiySet.FirstOrDefault(expression);
+
+
+        public IEnumerable<T> GetAll()
+            => _entitiySet.AsEnumerable();
+
+
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>> expression)
+            => _entitiySet.Where(expression).AsEnumerable();
+
+
+        public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
+            => await _entitiySet.ToListAsync(cancellationToken);
+
+
+        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> expression, CancellationToken cancellationToken = default)
+            => await _entitiySet.Where(expression).ToListAsync(cancellationToken);
+
+
+        public async Task<T> GetAsync(Expression<Func<T, bool>> expression, CancellationToken cancellationToken = default)
+            => await _entitiySet.FirstOrDefaultAsync(expression, cancellationToken);
+
+
+        public void Remove(T entity)
+            => _dbContext.Remove(entity);
+
+
+        public void RemoveRange(IEnumerable<T> entities)
+            => _dbContext.RemoveRange(entities);
+
+
+        public void Update(T entity)
+            => _dbContext.Update(entity);
+
+
+        public void UpdateRange(IEnumerable<T> entities)
+            => _dbContext.UpdateRange(entities);
     }
 }

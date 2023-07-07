@@ -2,7 +2,7 @@ using Infrastructure.Interface;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ namespace Infrastructure
     /// </summary>
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly DbContext _context;
+        private readonly TestContext _context;
 
         private bool _disposed;
         private Hashtable _repositories;
@@ -23,7 +23,7 @@ namespace Infrastructure
         /// 設定此Unit of work(UOF)的Context。
         /// </summary>
         /// <param name="context">設定UOF的context</param>
-        public UnitOfWork(DbContext context)
+        public UnitOfWork(TestContext context)
         {
             _context = context;
         }
